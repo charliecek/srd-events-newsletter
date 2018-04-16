@@ -34,10 +34,7 @@ $aTermArgs = array(
 
 /* Upcoming events */
 $filtersUpcomingWeek = array();
-$filtersUpcomingWeek['posts_per_page'] = (int) $theme_options['theme_max_events_by_dates'];
-if ($filtersUpcomingWeek['posts_per_page'] == 0) {
-    $filtersUpcomingWeek['posts_per_page'] = 10;
-}
+$filtersUpcomingWeek['posts_per_page'] = (trim($theme_options['theme_max_events_by_dates']) === '') ? 10 : (int) $theme_options['theme_max_events_by_dates'];
 
 global $ai1ec_registry;
 $date_system = $ai1ec_registry->get( 'date.system' );
@@ -92,16 +89,6 @@ if ($theme_options['theme_orderby'] === 'category') {
     $oPost = $oEvent->get( 'post' );
     if ($oPost->post_status !== 'publish') {
   //     echo $iPostID.": post_status: ".$oPost->post_status . "<br>" .PHP_EOL;
-      continue;
-    }
-    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
-    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
-    if (empty($aEventCategoriesIntersectSelected)) {
-      continue;
-    }
-    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
       continue;
     }
     $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
@@ -169,16 +156,6 @@ if ($theme_options['theme_orderby'] === 'category') {
     if (empty($aEventTagsIntersectSelected)) {
       continue;
     }
-    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
-    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
-    if (empty($aEventCategoriesIntersectSelected)) {
-      continue;
-    }
-    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
-      continue;
-    }
     $aUpcomingWeekPostIDs[] = $iPostID;
     $aEventsUpcomingWeek[] = $oEvent;
     $iCnt++;
@@ -195,10 +172,8 @@ if (isset($theme_options['theme_start_date_added_latest']) && !empty($theme_opti
   $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j") - date("N") - 7 + $iLatestEventsAddedDayOfWeekFrom);
   $theme_options['theme_start_date_added_latest'] = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
 }
-$iMaxEventsLatest = (int) $theme_options['theme_max_events_latest'];
-if ($iMaxEventsLatest == 0) {
-  $iMaxEventsLatest = 10;
-}
+$iMaxEventsLatest = (trim($theme_options['theme_max_events_latest']) === '') ? 10 : (int) $theme_options['theme_max_events_latest'];
+
 $filtersLatest['posts_per_page'] = $iMaxEventsLatest * 3;
 $filtersLatest['post_type'] = array('ai1ec_event');
 if (!empty($aUpcomingWeekPostIDs)) {
@@ -239,6 +214,16 @@ if ($theme_options['theme_orderby'] === 'category') {
   //   echo get_post_time('j.n.Y G:i', false, $oPost )."<br>".PHP_EOL;
     if ($iPostAdded < $iLatestEventsDefaultAddedStartTimestamp) {
   //     echo "skipped<br>".PHP_EOL;
+      continue;
+    }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
       continue;
     }
 
@@ -290,6 +275,16 @@ if ($theme_options['theme_orderby'] === 'category') {
   //   echo get_post_time('j.n.Y G:i', false, $oPost )."<br>".PHP_EOL;
     if ($iPostAdded < $iLatestEventsDefaultAddedStartTimestamp) {
   //     echo "skipped<br>".PHP_EOL;
+      continue;
+    }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
       continue;
     }
     $aEventsLatest[] = $oPost;
@@ -570,7 +565,7 @@ if (count($aEventsUpcomingWeek) > 0) :
                           <td align="left" id="td_8cbd_24" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;border-collapse: collapse;font-size: 14px;color: #888888;font-weight: 300;text-align: left;word-break: break-word;line-height: 22px;">
                             <div style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;">
                               <span id="span_8cbd_2" style="text-decoration: none;color: #ffffff;line-height: 44px;font-size: 36px;">
-                                  Udalosti na tento týždeň
+                                  <?php echo $theme_options['theme_title_by_dates']; ?>
                               </span>
                               <br style="line-height: 100%;">
                             </div>
@@ -969,7 +964,7 @@ if (count($aEventsLatest) > 0) :
                           <td align="left" id="td_8cbd_58" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;border-collapse: collapse;font-size: 14px;color: #888888;font-weight: 300;text-align: left;word-break: break-word;line-height: 22px;">
                             <div style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;">
                               <span id="span_8cbd_6" style="text-decoration: none;color: #ffffff;line-height: 44px;font-size: 36px;">
-                                Nové udalosti
+                                <?php echo $theme_options['theme_title_latest']; ?>
                               </span>
                               <br style="line-height: 100%;">
                             </div>

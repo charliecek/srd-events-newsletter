@@ -29,6 +29,8 @@ $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j")
 $strLatestEventsDefaultAddedStartDate = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
 
 $theme_defaults = array(
+  'theme_title_by_dates'              => 'Udalosti na tento týždeň',
+  'theme_title_latest'                => 'Nové udalosti',
   'theme_max_events_by_dates'         => 5,
   'theme_start_date'                  => '',
   'theme_end_date'                    => '',
@@ -100,6 +102,12 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
 
 <table class="form-table">
     <tr valign="top">
+        <th>Nadpis časti generovanej na základe rozpätia dátumov</th>
+        <td>
+            <?php $controls->text('theme_title_by_dates', 20); ?>
+        </td>
+    </tr>
+    <tr valign="top">
         <th>Maximálny počet udalostí v časti generovanej na základe rozpätia dátumov</th>
         <td>
             <?php $controls->text('theme_max_events_by_dates', 1); ?> (ak sa nevyplní, použije sa 10)
@@ -115,6 +123,12 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
         <th>Koncový dátum časti generovanej na základe rozpätia dátumov</th>
         <td>
             <?php $controls->text('theme_end_date', 10); ?> (v tvare d.m.rrrr; ak sa nevyplní, použije sa nedeľa v aktuálnom týždni: <?php echo $strDefaultEndDate; ?>)
+        </td>
+    </tr>
+    <tr valign="top">
+        <th>Nadpis časti s najnovšími udalosťami</th>
+        <td>
+            <?php $controls->text('theme_title_latest', 20); ?>
         </td>
     </tr>
     <tr valign="top">
