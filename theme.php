@@ -24,7 +24,8 @@ if (!defined('ABSPATH'))
  * $is_test - if true it means we are composing an email for test purpose.
  */
 
-$aOrderedCategories = array('ine', 'workshopy', 'party');
+$aOrderedCategories = explode(",", $theme_options['theme_category_order']);
+// var_dump($aOrderedCategories);
 $iDayOfWeekFrom = 1; // Monday
 
 /* Upcoming events */
@@ -60,9 +61,15 @@ $theme_subject = "Newsletter " . $theme_options['theme_start_date'] . " - " . $t
 // gets time
 $start_time = $ai1ec_registry->get( 'date.time', $iStartTimestamp, 'sys.default' );
 $end_time = $ai1ec_registry->get( 'date.time', $iEndTimestamp, 'sys.default' );
-  
+
 $aEventsUpcomingWeekAll = $search->get_events_between($start_time, $end_time);
 // $aEventsUpcomingWeekAll = $search->get_events_between($start_time, $end_time, array(), true);
+
+$aSelectedCategoryIds = $theme_options['theme_categories'];
+$aSelectedTagIds = $theme_options['theme_tags'];
+if (empty($aSelectedCategoryIds)) { $aSelectedCategoryIds = array(); }
+if (empty($aSelectedTagIds)) { $aSelectedTagIds = array(); }
+// var_dump($aSelectedCategoryIds);
 
 if ($theme_options['theme_orderby'] === 'category') {
   // Ordered by category //
@@ -70,7 +77,6 @@ if ($theme_options['theme_orderby'] === 'category') {
   foreach ($aOrderedCategories as $strCatSlug) {
     $aEventsUpcomingByCats[$strCatSlug] = array();
   }
-  $aEventsUpcomingByCats['uncategorized'] = array();
 
   $iCnt = 1;
   $aUpcomingWeekPostIDs = array();
@@ -85,32 +91,32 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
     $aUpcomingWeekPostIDs[] = $iPostID;
-    $aTerms = wp_get_post_terms( $iPostID, 'events_categories' );
-    if (!empty($aTerms)) {
-      foreach ( $aTerms as $oTerm ) {
+    $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' ); // TODO for latest
+    $aEventTags = wp_get_post_terms( $iPostID, 'events_tags' ); // TODO for latest
+    if (!empty($aEventCategories)) {
+      foreach ( $aEventCategories as $oEventCategory ) {
         $bHasCat = false;
         foreach ( $aOrderedCategories as $strCatSlug ) {
-          if ( $oTerm->slug === $strCatSlug ) {
+          if ( $oEventCategory->slug === $strCatSlug ) {
             $aEventsUpcomingByCats[$strCatSlug][] = $oEvent;
             $bHasCat = true;
             break 2; // Use the first matched category, don't put an event into multiple items of $aEventsUpcomingByCats //
           }
         }
         if (!$bHasCat) {
-          $aEventsUpcomingByCats['uncategorized'][] = $oEvent;
+          $aEventsUpcomingByCats['-'][] = $oEvent;
         }
       }
     } else {
-      $aEventsUpcomingByCats['uncategorized'][] = $oEvent;
+      $aEventsUpcomingByCats['-'][] = $oEvent;
     }
     $iCnt++;
   }
-  $aEventsUpcomingWeek = array_merge(
-    $aEventsUpcomingByCats[$aOrderedCategories[0]],
-    $aEventsUpcomingByCats[$aOrderedCategories[1]],
-    $aEventsUpcomingByCats[$aOrderedCategories[2]],
-    $aEventsUpcomingByCats['uncategorized']
-  );
+  
+  $aEventsUpcomingWeek = array();
+  foreach ($aEventsUpcomingByCats as $aEventsIncat) {
+    $aEventsUpcomingWeek = array_merge( $aEventsUpcomingWeek, $aEventsIncat);
+  }
   // echo "<pre>";
   // foreach ($aEventsUpcomingByCats as $strCatSlug => $aEvents) {
   //   var_dump($strCatSlug, count($aEvents));
@@ -173,7 +179,6 @@ if ($theme_options['theme_orderby'] === 'category') {
   foreach ($aOrderedCategories as $strCatSlug) {
     $aEventsLatestByCats[$strCatSlug] = array();
   }
-  $aEventsLatestByCats['uncategorized'] = array();
 
   $iCnt = 1;
   foreach ($aEventsLatestByStart as $oPost) {
@@ -194,32 +199,31 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
 
-    $aTerms = wp_get_post_terms( $iPostID, 'events_categories' );
-    if (!empty($aTerms)) {
-      foreach ( $aTerms as $oTerm ) {
+    $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' );
+    if (!empty($aEventCategories)) {
+      foreach ( $aEventCategories as $oEventCategory ) {
         $bHasCat = false;
         foreach ( $aOrderedCategories as $strCatSlug ) {
-          if ( $oTerm->slug === $strCatSlug ) {
+          if ( $oEventCategory->slug === $strCatSlug ) {
             $aEventsLatestByCats[$strCatSlug][] = $oPost;
             $bHasCat = true;
             break 2; // Use the first matched category, don't put an event into multiple items of $aEventsUpcomingByCats //
           }
         }
         if (!$bHasCat) {
-          $aEventsLatestByCats['uncategorized'][] = $oPost;
+          $aEventsLatestByCats['-'][] = $oPost;
         }
       }
     } else {
-      $aEventsLatestByCats['uncategorized'][] = $oPost;
+      $aEventsLatestByCats['-'][] = $oPost;
     }
     $iCnt++;
   }
-  $aEventsLatest = array_merge(
-    $aEventsLatestByCats[$aOrderedCategories[0]],
-    $aEventsLatestByCats[$aOrderedCategories[1]],
-    $aEventsLatestByCats[$aOrderedCategories[2]],
-    $aEventsLatestByCats['uncategorized']
-  );
+  $aEventsLatest = array();
+  foreach ($aEventsLatestByCats as $aEventsIncat) {
+    $aEventsLatest = array_merge( $aEventsLatest, $aEventsIncat);
+  }
+
   // echo "<pre>";
   // foreach ($aEventsLatestByCats as $strCatSlug => $aPosts) {
   //   var_dump($strCatSlug, count($aPosts));

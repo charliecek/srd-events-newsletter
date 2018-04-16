@@ -34,10 +34,55 @@ $theme_defaults = array(
   'theme_end_date'                    => '',
   'theme_max_events_latest'           => 5,
   'theme_orderby'                     => 'category',
+  'theme_categories'                  => array(),
+  'theme_tags'                        => array(),
 );
+
+$aTermArgs = array(
+  'hide_empty'  => false,
+  'orderby'     => 'term_id',
+  'fields'      => 'id=>name',
+);
+$strAi1ecCategoryTaxonomy = 'events_categories';
+$strAi1ecTagTaxonomy      = 'events_tags';
+$aTags                    = get_terms( $strAi1ecTagTaxonomy, $aTermArgs );
+$aCategories              = get_terms( $strAi1ecCategoryTaxonomy, $aTermArgs );
+$aCategorySlugs           = get_terms( $strAi1ecCategoryTaxonomy, array_merge($aTermArgs, array( 'fields' => 'id=>slug' ) ));
+
+$strDefaultCategoryOrder_notValidated = "ine,workshopy,party,-";
+$aDefaultCategoryOrder_notValidated = explode( ",", $strDefaultCategoryOrder_notValidated );
+$aDefaultCategoryOrder = array();
+foreach ($aDefaultCategoryOrder_notValidated as $slug) {
+  if (in_array($slug, $aCategorySlugs) || $slug === '-') {
+    $aDefaultCategoryOrder[] = $slug;
+  }
+}
+$strDefaultCategoryOrder = implode( ',', $aDefaultCategoryOrder);
+$theme_defaults['theme_category_order'] = $strDefaultCategoryOrder;
+$aCategoriesBySlugs = array();
+
+foreach ($aTags as $id => $name) {
+  $theme_defaults['theme_tags'][] = $id;
+}
+$aCategoryNamesBySlugs = array();
+foreach ($aCategories as $id => $name) {
+  $theme_defaults['theme_categories'][] = $id;
+  $aCategoryNamesBySlugs[$aCategorySlugs[$id]] = $name;
+}
+$aCategoryNamesBySlugs["-"] = "(nezaradené)";
+
+// TODO if no cats/tags are selected, defaults are forced => FIXME
 
 // Mandatory!
 $controls->merge_defaults($theme_defaults);
+
+$strCategorySlugsOrder = $controls->get_value("theme_category_order");
+$aCategorySlugsOrder = explode(',', $strCategorySlugsOrder);
+$aOrderedCategories = array();
+foreach ($aCategorySlugsOrder as $slug) {
+  $aOrderedCategories[$slug] = $aCategoryNamesBySlugs[$slug];
+}
+$aOrderedCategories += $aCategoryNamesBySlugs;
 ?>
 
 <table class="form-table">
@@ -77,4 +122,55 @@ $controls->merge_defaults($theme_defaults);
             <?php $controls->select('theme_orderby', array('category' => 'Kategórie', 'date' => 'Dátumu')); ?>
         </td>
     </tr>
+    <tr valign="top">
+        <th>Použiť udalosti v týchto kategóriách</th>
+        <td>
+            <?php $controls->checkboxes_group('theme_categories', $aCategories); ?>
+        </td>
+    </tr>
+    <tr valign="top">
+        <th>Použiť udalosti s týmito tagmi</th>
+        <td>
+            <?php $controls->checkboxes_group('theme_tags', $aTags); ?>
+        </td>
+    </tr>
+    <tr valign="top" id="theme_category_order-tr">
+        <th>Poradie kategórií</th>
+        <td>
+            <?php $controls->hidden('theme_category_order', $aTags); ?>
+              
+            <ul id="theme_category_order-ul">
+              <?php
+                foreach ($aOrderedCategories as $slug => $name) {
+                  echo "<li id='theme_category_order-li-{$slug}' class='newsletter-checkboxes-item theme_category_order-li' title='{$name}'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span> {$name}</li>".PHP_EOL;
+                }
+              ?>
+            </ul>
+        </td>
+    </tr>
 </table>
+
+<script type="text/javascript">
+  function srdNlOptionsShowHideCategoryOrder() {
+    var orderby = jQuery("#options-theme_orderby").val()
+    var categoryOrderTR = jQuery("#theme_category_order-tr")
+    if (orderby === 'category') {
+      categoryOrderTR.show()
+    } else {
+      categoryOrderTR.hide()
+    }
+  }
+  
+  jQuery(document).ready(function() {
+    srdNlOptionsShowHideCategoryOrder()
+    jQuery("#options-theme_orderby").change(function () { srdNlOptionsShowHideCategoryOrder() });
+    jQuery("#theme_category_order-ul").sortable({
+      stop: function( event, ui ) {
+        var aSortedSlugs = $( "#theme_category_order-ul" ).sortable( "toArray" );
+        var strSortedSlugs = aSortedSlugs.join(",").replace(/theme_category_order-li-/g, "")
+        jQuery("input[name*=theme_category_order]").val(strSortedSlugs)
+      }
+    });
+    jQuery("#theme_category_order-ul").disableSelection();
+  });
+</script>
