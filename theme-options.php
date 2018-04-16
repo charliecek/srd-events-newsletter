@@ -36,6 +36,7 @@ $theme_defaults = array(
   'theme_orderby'                     => 'category',
   'theme_categories'                  => array(),
   'theme_tags'                        => array(),
+  'theme_terms_hidden'                => 1,
 );
 
 $aTermArgs = array(
@@ -71,7 +72,19 @@ foreach ($aCategories as $id => $name) {
 }
 $aCategoryNamesBySlugs["-"] = "(nezaradené)";
 
-// TODO if no cats/tags are selected, defaults are forced => FIXME
+$iTermsSet = $controls->get_value("theme_terms_hidden");
+$bTermsSet = isset($iTermsSet);
+$aCategoriesBeforeMerge = $controls->get_value("theme_categories");
+$aTagsBeforeMerge = $controls->get_value("theme_tags");
+
+if ($bTermsSet) {
+  if (!isset($aCategoriesBeforeMerge) || empty($aCategoriesBeforeMerge)) {
+    $theme_defaults['theme_categories'] = array();
+  }
+  if (!isset($aTagsBeforeMerge) || empty($aTagsBeforeMerge)) {
+    $theme_defaults['theme_tags'] = array();
+  }
+}
 
 // Mandatory!
 $controls->merge_defaults($theme_defaults);
@@ -122,23 +135,10 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
             <?php $controls->select('theme_orderby', array('category' => 'Kategórie', 'date' => 'Dátumu')); ?>
         </td>
     </tr>
-    <tr valign="top">
-        <th>Použiť udalosti v týchto kategóriách</th>
-        <td>
-            <?php $controls->checkboxes_group('theme_categories', $aCategories); ?>
-        </td>
-    </tr>
-    <tr valign="top">
-        <th>Použiť udalosti s týmito tagmi</th>
-        <td>
-            <?php $controls->checkboxes_group('theme_tags', $aTags); ?>
-        </td>
-    </tr>
     <tr valign="top" id="theme_category_order-tr">
         <th>Poradie kategórií</th>
         <td>
-            <?php $controls->hidden('theme_category_order', $aTags); ?>
-              
+            <?php $controls->hidden('theme_category_order'); ?>
             <ul id="theme_category_order-ul">
               <?php
                 foreach ($aOrderedCategories as $slug => $name) {
@@ -146,6 +146,21 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
                 }
               ?>
             </ul>
+        </td>
+    </tr>
+    <tr valign="top">
+        <th>Použiť udalosti v týchto kategóriách</th>
+        <td class="term_checkboxes">
+            <?php
+              $controls->hidden('theme_terms_hidden');
+              $controls->checkboxes_group('theme_categories', $aCategories);
+            ?>
+        </td>
+    </tr>
+    <tr valign="top">
+        <th>Použiť udalosti s týmito tagmi</th>
+        <td class="term_checkboxes">
+            <?php $controls->checkboxes_group('theme_tags', $aTags); ?>
         </td>
     </tr>
 </table>
@@ -166,11 +181,17 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
     jQuery("#options-theme_orderby").change(function () { srdNlOptionsShowHideCategoryOrder() });
     jQuery("#theme_category_order-ul").sortable({
       stop: function( event, ui ) {
-        var aSortedSlugs = $( "#theme_category_order-ul" ).sortable( "toArray" );
+        var aSortedSlugs = $( "#theme_category_order-ul" ).sortable( "toArray" )
         var strSortedSlugs = aSortedSlugs.join(",").replace(/theme_category_order-li-/g, "")
         jQuery("input[name*=theme_category_order]").val(strSortedSlugs)
-      }
-    });
-    jQuery("#theme_category_order-ul").disableSelection();
-  });
+      },
+      cursor: "move",
+    })
+    jQuery("#theme_category_order-ul").disableSelection()
+    jQuery(".term_checkboxes .newsletter-checkboxes-item label").each(function() {
+      $this = jQuery(this)
+      $this.attr("title", $this.text())
+    })
+    jQuery(".theme_category_order-li").css("cursor", "pointer")
+  })
 </script>

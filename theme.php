@@ -10,7 +10,7 @@ if (!defined('ABSPATH'))
     exit;
 
 /*
- * Some variabled are prepared by Newsletter Plus and are available inside the theme,
+ * Some variables are prepared by Newsletter Plus and are available inside the theme,
  * for example the theme options used to build the email body as configured by blog
  * owner.
  *
@@ -27,6 +27,10 @@ if (!defined('ABSPATH'))
 $aOrderedCategories = explode(",", $theme_options['theme_category_order']);
 // var_dump($aOrderedCategories);
 $iDayOfWeekFrom = 1; // Monday
+
+$aTermArgs = array(
+  'fields'      => 'ids',
+);
 
 /* Upcoming events */
 $filtersUpcomingWeek = array();
@@ -90,9 +94,28 @@ if ($theme_options['theme_orderby'] === 'category') {
   //     echo $iPostID.": post_status: ".$oPost->post_status . "<br>" .PHP_EOL;
       continue;
     }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
+      continue;
+    }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
+      continue;
+    }
     $aUpcomingWeekPostIDs[] = $iPostID;
-    $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' ); // TODO for latest
-    $aEventTags = wp_get_post_terms( $iPostID, 'events_tags' ); // TODO for latest
+    $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' );
     if (!empty($aEventCategories)) {
       foreach ( $aEventCategories as $oEventCategory ) {
         $bHasCat = false;
@@ -134,6 +157,26 @@ if ($theme_options['theme_orderby'] === 'category') {
     $oPost = $oEvent->get( 'post' );
     if ($oPost->post_status !== 'publish') {
   //     echo $iPostID.": post_status: ".$oPost->post_status . "<br>" .PHP_EOL;
+      continue;
+    }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
+      continue;
+    }
+    $aEventCategoryIds = wp_get_post_terms( $iPostID, 'events_categories', $aTermArgs );
+    $aEventCategoriesIntersectSelected = array_intersect( $aEventCategoryIds, $aSelectedCategoryIds );
+    if (empty($aEventCategoriesIntersectSelected)) {
+      continue;
+    }
+    $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
+    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+    if (empty($aEventTagsIntersectSelected)) {
       continue;
     }
     $aUpcomingWeekPostIDs[] = $iPostID;
