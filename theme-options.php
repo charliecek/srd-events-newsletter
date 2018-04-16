@@ -29,6 +29,7 @@ $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j")
 $strLatestEventsDefaultAddedStartDate = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
 
 $theme_defaults = array(
+  'theme_sender_name'                 => get_bloginfo( 'name' ),
   'theme_title_by_dates'              => 'Udalosti na tento týždeň',
   'theme_title_latest'                => 'Nové udalosti',
   'theme_max_events_by_dates'         => 5,
@@ -101,6 +102,12 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
 ?>
 
 <table class="form-table">
+    <tr valign="top">
+        <th>Odosielateľ</th>
+        <td>
+            <?php $controls->text('theme_sender_name', 20); ?>
+        </td>
+    </tr>
     <tr valign="top">
         <th>Nadpis časti generovanej na základe rozpätia dátumov</th>
         <td>

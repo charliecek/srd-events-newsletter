@@ -24,8 +24,11 @@ if (!defined('ABSPATH'))
  * $is_test - if true it means we are composing an email for test purpose.
  */
 
+$aOptions = $newsletter->options;
+$aOptions["sender_name"] = $theme_options['theme_sender_name'];
+$newsletter->save_options($aOptions);
+
 $aOrderedCategories = explode(",", $theme_options['theme_category_order']);
-// var_dump($aOrderedCategories);
 $iDayOfWeekFrom = 1; // Monday
 
 $aTermArgs = array(
@@ -70,7 +73,6 @@ $aSelectedCategoryIds = $theme_options['theme_categories'];
 $aSelectedTagIds = $theme_options['theme_tags'];
 if (empty($aSelectedCategoryIds)) { $aSelectedCategoryIds = array(); }
 if (empty($aSelectedTagIds)) { $aSelectedTagIds = array(); }
-// var_dump($aSelectedCategoryIds);
 
 if ($theme_options['theme_orderby'] === 'category') {
   // Ordered by category //
@@ -127,11 +129,6 @@ if ($theme_options['theme_orderby'] === 'category') {
   foreach ($aEventsUpcomingByCats as $aEventsIncat) {
     $aEventsUpcomingWeek = array_merge( $aEventsUpcomingWeek, $aEventsIncat);
   }
-  // echo "<pre>";
-  // foreach ($aEventsUpcomingByCats as $strCatSlug => $aEvents) {
-  //   var_dump($strCatSlug, count($aEvents));
-  // }
-  // echo "</pre>";
 } else {
   // Ordered by date //
   $iCnt = 1;
@@ -180,7 +177,6 @@ if (!empty($aUpcomingWeekPostIDs)) {
   $filtersLatest['exclude'] = $aUpcomingWeekPostIDs;
 }
 $aEventsLatestPosts = get_posts($filtersLatest);
-// var_dump(count($aEventsLatestPosts));
 foreach ($aEventsLatestPosts as $oPost) {
   $iPostID = $oPost->ID;
   $oEvent = new Ai1ec_Event( $ai1ec_registry );
@@ -189,7 +185,6 @@ foreach ($aEventsLatestPosts as $oPost) {
   $aEventsLatestByStart[$iEventStartTimestamp] = $oPost;
 }
 ksort($aEventsLatestByStart);
-// var_dump(count($aEventsLatestByStart));
 
 if ($theme_options['theme_orderby'] === 'category') {
   // Ordered by category //
@@ -252,11 +247,6 @@ if ($theme_options['theme_orderby'] === 'category') {
     $aEventsLatest = array_merge( $aEventsLatest, $aEventsIncat);
   }
 
-  // echo "<pre>";
-  // foreach ($aEventsLatestByCats as $strCatSlug => $aPosts) {
-  //   var_dump($strCatSlug, count($aPosts));
-  // }
-  // echo "</pre>";
 } else {
   // Ordered by date //
   $iCnt = 1;
