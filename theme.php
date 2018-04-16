@@ -24,9 +24,11 @@ if (!defined('ABSPATH'))
  * $is_test - if true it means we are composing an email for test purpose.
  */
 
-$aOptions = $newsletter->options;
-$aOptions["sender_name"] = $theme_options['theme_sender_name'];
-$newsletter->save_options($aOptions);
+if (isset($theme_options['theme_sender_name']) && !empty($theme_options['theme_sender_name']) && $newsletter->options['sender_name'] !== $theme_options['theme_sender_name']) {
+  $aOptions = $newsletter->options;
+  $aOptions["sender_name"] = $theme_options['theme_sender_name'];
+  $newsletter->save_options($aOptions);
+}
 
 $aOrderedCategories = explode(",", $theme_options['theme_category_order']);
 $iDayOfWeekFrom = 1; // Monday
