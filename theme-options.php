@@ -65,9 +65,11 @@ $strDefaultCategoryOrder = implode( ',', $aDefaultCategoryOrder);
 $theme_defaults['theme_category_order'] = $strDefaultCategoryOrder;
 $aCategoriesBySlugs = array();
 
+$aTags['-'] = "(bez tagu)";
 foreach ($aTags as $id => $name) {
   $theme_defaults['theme_tags'][] = $id;
 }
+
 $aCategoryNamesBySlugs = array();
 foreach ($aCategories as $id => $name) {
   $theme_defaults['theme_categories'][] = $id;

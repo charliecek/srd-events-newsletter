@@ -73,8 +73,13 @@ $aEventsUpcomingWeekAll = $search->get_events_between($start_time, $end_time);
 
 $aSelectedCategoryIds = $theme_options['theme_categories'];
 $aSelectedTagIds = $theme_options['theme_tags'];
+$bIncludeEventsWithoutTag = false;
 if (empty($aSelectedCategoryIds)) { $aSelectedCategoryIds = array(); }
 if (empty($aSelectedTagIds)) { $aSelectedTagIds = array(); }
+if (($key = array_search("-", $aSelectedTagIds)) !== false) {
+  $bIncludeEventsWithoutTag = true;
+  unset($aSelectedTagIds[$key]);
+}
 
 if ($theme_options['theme_orderby'] === 'category') {
   // Ordered by category //
@@ -101,9 +106,13 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
     $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
-      continue;
+    if ($bIncludeEventsWithoutTag && empty($aEventTagIds)) {
+      // ok
+    } else {
+      $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+      if (empty($aEventTagsIntersectSelected)) {
+        continue;
+      }
     }
     $aUpcomingWeekPostIDs[] = $iPostID;
     $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' );
@@ -151,9 +160,13 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
     $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
-      continue;
+    if ($bIncludeEventsWithoutTag && empty($aEventTagIds)) {
+      // ok
+    } else {
+      $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+      if (empty($aEventTagsIntersectSelected)) {
+        continue;
+      }
     }
     $aUpcomingWeekPostIDs[] = $iPostID;
     $aEventsUpcomingWeek[] = $oEvent;
@@ -219,9 +232,13 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
     $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
-      continue;
+    if ($bIncludeEventsWithoutTag && empty($aEventTagIds)) {
+      // ok
+    } else {
+      $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+      if (empty($aEventTagsIntersectSelected)) {
+        continue;
+      }
     }
 
     $aEventCategories = wp_get_post_terms( $iPostID, 'events_categories' );
@@ -275,9 +292,13 @@ if ($theme_options['theme_orderby'] === 'category') {
       continue;
     }
     $aEventTagIds = wp_get_post_terms( $iPostID, 'events_tags', $aTermArgs );
-    $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
-    if (empty($aEventTagsIntersectSelected)) {
-      continue;
+    if ($bIncludeEventsWithoutTag && empty($aEventTagIds)) {
+      // ok
+    } else {
+      $aEventTagsIntersectSelected = array_intersect( $aEventTagIds, $aSelectedTagIds );
+      if (empty($aEventTagsIntersectSelected)) {
+        continue;
+      }
     }
     $aEventsLatest[] = $oPost;
     $iCnt++;
@@ -636,7 +657,7 @@ if (count($aEventsUpcomingWeek) > 0) :
       $image = $aImage[0];
     }
     $strVenue = ai1ecf_fix_location($oEvent->get( 'venue' ), $post->ID, $oEvent->get("address"), $oEvent->get("contact_name"), true);
-    
+
     $strExcerpt = get_the_excerpt();
     $dom = new DOMDocument();
     $dom->loadHTML(mb_convert_encoding($strExcerpt, 'HTML-ENTITIES', 'UTF-8'));
