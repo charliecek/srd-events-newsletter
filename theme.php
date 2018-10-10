@@ -174,6 +174,40 @@ if ($theme_options['theme_orderby'] === 'category') {
   }
 }
 /* Upcoming events - end */
+
+function ai1ecfRemoveEmoji($text) {
+    // For more: https://unicode.org/Public/emoji/11.0/emoji-data.txt //
+    
+    $clean_text = "";
+
+    // Match Miscellaneous Symbols and Pictographs
+    $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
+    $clean_text = preg_replace($regexSymbols, '', $text);
+
+    // Match Emoticons
+//     $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
+    $regexEmoticons = '/[\x{1F62C}\x{1F641}-\x{1F64F}]/u';
+    $clean_text = preg_replace($regexEmoticons, '', $clean_text);
+
+    // Match Transport And Map Symbols
+    $regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
+    $clean_text = preg_replace($regexTransport, '', $clean_text);
+
+    // Match Miscellaneous Symbols
+    $regexMisc = '/[\x{2600}-\x{26FF}]/u';
+    $clean_text = preg_replace($regexMisc, '', $clean_text);
+
+    // Match Dingbats
+    $regexDingbats = '/[\x{2700}-\x{27BF}]/u';
+    $clean_text = preg_replace($regexDingbats, '', $clean_text);
+
+    // Match other
+    $regex = '/[\x{1F910}-\x{1F91F}]|[\x{23E9}-\x{23F3}]|[\x{23F8}-\x{23FA}]/u';
+    $clean_text = preg_replace($regex, '', $clean_text);
+
+    return $clean_text;
+}
+
 /* Latest events */
 $filtersLatest = array();
 $iLatestEventsAddedDayOfWeekFrom = 1; // Monday
@@ -667,6 +701,7 @@ if (count($aEventsUpcomingWeek) > 0) :
     }
     $strExcerpt = $dom->saveHTML($dom->documentElement);
     $strExcerpt = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $strExcerpt);
+    $strExcerpt = ai1ecfRemoveEmoji( $strExcerpt );
 ?>
 
       <?php if (!empty($image)) { ?>
@@ -1065,6 +1100,7 @@ if (count($aEventsLatest) > 0) :
     }
     $strExcerpt = $dom->saveHTML($dom->documentElement);
     $strExcerpt = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $strExcerpt);
+    $strExcerpt = ai1ecfRemoveEmoji( $strExcerpt );
 ?>
 
       <?php if (!empty($image)) { ?>
@@ -1398,7 +1434,7 @@ endif;
                                       <tbody>
                                         <tr>
                                           <td align="center" valign="middle" id="td_8cbd_94" width="25" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;border-collapse: collapse;padding-left: 3px;padding-right: 3px;width: 25px;">
-                                            <a href="https://www.facebook.com/salsaruedajarohluch/" id="a_8cbd_5" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;font-size: inherit;border-style: none;text-decoration: none !important;">
+                                            <a href="https://www.facebook.com/salsaruedadance/" target="_blank" id="a_8cbd_5" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;font-size: inherit;border-style: none;text-decoration: none !important;">
                                               <img src="<?php echo $theme_url; ?>/images/fb-logo.png" width="25" alt="facebook" id="img_8cbd_10" height="auto" style="line-height: 100%;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;max-width: 25px;height: auto !important;border: 0 !important;display: block !important;">
                                             </a>
                                           </td>
