@@ -112,6 +112,7 @@ if ($bTermsSet) {
 }
 
 // var_dump($controls->get_value("theme_start_date"));
+// var_dump($controls->get_value("theme_replace_latest"));
 
 // Mandatory!
 $controls->merge_defaults($theme_defaults);
@@ -139,9 +140,18 @@ function fnSrdButtonDateReset( $strName, $aDateParts, $bUseName = false ) {
   $strButtonHtml = str_replace(array('%onclick%'), array(esc_attr($strOnclick)), $strButtonTemplate);
   echo $strButtonHtml;
 }
+
+$strNewsletterLatestUrl = get_home_url( null, '/newsletters/nl-latest.html' );
 ?>
 
 <table class="form-table">
+    <tr valign="top">
+        <th>Uložiť newsletter</th>
+        <td>
+            <?php $controls->checkbox('theme_replace_latest', 'Uložiť výstup newslettra, aby sa dal zdieľať?'); ?><br>
+            Adresa: <a href="<?php echo $strNewsletterLatestUrl; ?>" target="_blank">tu</a>
+        </td>
+    </tr>
     <tr valign="top">
         <th>Odosielateľ</th>
         <td>
@@ -261,11 +271,6 @@ function fnSrdButtonDateReset( $strName, $aDateParts, $bUseName = false ) {
     })
     jQuery(".theme_category_order-li").css("cursor", "pointer").css("width", "100%")
     
-//     jQuery("button.button-primary").each(function () {
-//       var $button = jQuery(this)
-//       if ($button.html() == "Reset" && !$button.hasClass("srd-buton-grey")) {
-//         $button.addClass("srd-buton-grey").css("background-color", "lightgrey").css("color", "#444")
-//       }
-//     })
+    jQuery("#theme_replace_latest").prop("checked", false);
   })
 </script>

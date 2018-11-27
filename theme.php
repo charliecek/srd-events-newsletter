@@ -6,8 +6,9 @@
 global $newsletter; // Newsletter object
 global $post; // Current post managed by WordPress
 
-if (!defined('ABSPATH'))
-    exit;
+if (!defined('ABSPATH')) {
+  exit;
+}
 
 /*
  * Some variables are prepared by Newsletter Plus and are available inside the theme,
@@ -367,6 +368,9 @@ $GLOBALS['disable_ai1ec_excerpt_filter'] = true;
 $font = $theme_options['theme_font'];
 $font_size = $theme_options['theme_font_size'];
 
+if (false === ob_get_contents()) {
+  ob_start();
+}
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -1562,3 +1566,58 @@ endif;
     </table>
   </body>
 </html>
+
+<?php
+if (false !== ob_get_contents()) {
+  $strContents = str_replace(
+    array( "{profile_url}", "{blog_url}", "{email_url}" ),
+    array( "", get_home_url(), "" ),
+    ob_get_contents()
+  );
+  // var_dump($theme_options['theme_replace_latest']);
+  $bReplaceLatest = (isset($theme_options['theme_replace_latest']) && $theme_options['theme_replace_latest']);
+  unset($theme_options['theme_replace_latest']);
+  $strThemeOptionsHash = md5(serialize($theme_options));
+  $strDirPath = get_home_path() . 'newsletters';
+  
+  // Remove subdirectory if wp is installed in one //
+  $home    = set_url_scheme( WP_HOME, 'http' );
+  $siteurl = set_url_scheme( WP_SITEURL, 'http' );
+  if ( ! empty( $home ) && 0 !== strcasecmp( $home, $siteurl ) ) {
+    $wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
+    $strDirPath = str_replace( $wp_path_rel_to_home, '', $strDirPath );
+  }
+  
+  // Create directory if missing //
+  if (!file_exists($strDirPath)) {
+    mkdir($strDirPath);
+  }
+  
+  // Save the theme for the current options //
+  $strFilePath = $strDirPath.'/nl-'.$strThemeOptionsHash.'.html';
+  file_put_contents($strFilePath, $strContents);
+  
+  // Save the theme to latest, if needed //
+  if ($bReplaceLatest) {
+    $strFilePath = $strDirPath.'/nl-latest.html';
+    file_put_contents($strFilePath, $strContents);
+    
+//     echo "Saved";
+    $aThemeOptions = get_option('newsletter_emails_theme_srd', false);
+    if (false !== $aThemeOptions && isset($aThemeOptions['theme_replace_latest'])) {
+//       echo "<!-- \n"; var_dump($aThemeOptions); echo "\n -->";
+//       echo " and removed option";
+      unset($aThemeOptions['theme_replace_latest']);
+      update_option('newsletter_emails_theme_srd', $aThemeOptions);
+      
+      $aThemeOptionsAll = get_option('newsletter_emails', false);
+      if (false !== $aThemeOptionsAll && isset($aThemeOptionsAll['theme']) && $aThemeOptionsAll['theme'] == "srd") {
+//         echo "<!-- \n"; var_dump($aThemeOptionsAll); echo "\n -->";
+//         echo " and removed option (2)";
+        unset($aThemeOptionsAll['theme_replace_latest']);
+        update_option('newsletter_emails', $aThemeOptionsAll);
+      }
+    }
+  }
+}
+?>
