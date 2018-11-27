@@ -45,24 +45,39 @@ global $ai1ec_registry;
 $date_system = $ai1ec_registry->get( 'date.system' );
 $search = $ai1ec_registry->get('model.search');
 
+// echo "<pre>";
+$iGmtOffsetHrs = intval(get_option('gmt_offset'));
+// var_dump($iGmtOffsetHrs);
+$iGmtOffsetSec = 3600 * $iGmtOffsetHrs;
 if (isset($theme_options['theme_start_date']) && !empty($theme_options['theme_start_date'])) {
-//   echo "start_date is set";
-  $dtStartDate = date_create_from_format( 'j.n.Y', $theme_options['theme_start_date'] );
-  date_time_set($dtStartDate, 24, 0, 0);
-  $iStartTimestamp = date_timestamp_get($dtStartDate);
+  // echo "start_date is set";
+  $iTimestampDifference = $iGmtOffsetSec - 12 * 3600; // We add the GMT offset and subtract 12h, since the date picker places the timestamp at 12:00 GMT //
+  $iStartTimestamp = intval($theme_options['theme_start_date']) + $iTimestampDifference;
 } else {
   $iStartTimestamp = mktime(0, 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom);
-  $theme_options['theme_start_date'] = date( 'j.n.Y', $iStartTimestamp );
 }
+// var_dump($iStartTimestamp);
+
+// Just for the title: //
+$theme_options['theme_start_date'] = date( 'j.n.Y', $iStartTimestamp );
+// echo $theme_options['theme_start_date'] . "<br>";
+
 if (isset($theme_options['theme_end_date']) && !empty($theme_options['theme_end_date'])) {
-  $dtEndDate = date_create_from_format( 'j.n.Y', $theme_options['theme_end_date'] );
-  date_time_set($dtEndDate, 24, 0, 0);
-  $iEndTimestamp = date_timestamp_get($dtEndDate);
+  // echo "end_date is set";
+  $iTimestampDifference = $iGmtOffsetSec + 12 * 3600 - 1; // We add the GMT offset and add 12h - 1s, since the date picker places the timestamp at 12:00 GMT //
+  $iEndTimestamp = intval($theme_options['theme_end_date']) + $iTimestampDifference;
 } else {
   $iEndTimestamp = mktime(0, 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom + 7) - 1;
-  $theme_options['theme_end_date'] = date( 'j.n.Y', $iEndTimestamp );
 }
+// var_dump($iEndTimestamp);
+// echo "</pre>";
+
+// Just for the title: //
+$theme_options['theme_end_date'] = date( 'j.n.Y', $iEndTimestamp );
+// echo $theme_options['theme_end_date'] . "<br>";
+
 $theme_subject = "Newsletter " . $theme_options['theme_start_date'] . " - " . $theme_options['theme_end_date'];
+// echo $theme_subject;
 
 // gets time
 $start_time = $ai1ec_registry->get( 'date.time', $iStartTimestamp, 'sys.default' );
@@ -212,12 +227,14 @@ function ai1ecfRemoveEmoji($text) {
 $filtersLatest = array();
 $iLatestEventsAddedDayOfWeekFrom = 1; // Monday
 if (isset($theme_options['theme_start_date_added_latest']) && !empty($theme_options['theme_start_date_added_latest'])) {
-  $dtAddedFromDate = date_create_from_format( 'j.n.Y G:i', $theme_options['theme_start_date_added_latest'] );
-  $iLatestEventsDefaultAddedStartTimestamp = date_timestamp_get($dtAddedFromDate);
+//   $dtAddedFromDate = date_create_from_format( 'j.n.Y G:i', $theme_options['theme_start_date_added_latest'] );
+//   $iLatestEventsDefaultAddedStartTimestamp = date_timestamp_get($dtAddedFromDate);
+  $iLatestEventsDefaultAddedStartTimestamp = $theme_options['theme_start_date_added_latest'] + $iGmtOffsetSec;
 } else {
   $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j") - date("N") - 7 + $iLatestEventsAddedDayOfWeekFrom);
-  $theme_options['theme_start_date_added_latest'] = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
 }
+// $theme_options['theme_start_date_added_latest'] = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
+// echo date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp ) . "<br>";
 $iMaxEventsLatest = (trim($theme_options['theme_max_events_latest']) === '') ? 10 : (int) $theme_options['theme_max_events_latest'];
 
 $filtersLatest['posts_per_page'] = $iMaxEventsLatest * 3;

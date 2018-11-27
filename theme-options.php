@@ -19,22 +19,42 @@ if (!defined('ABSPATH'))
     exit;
 
 $iDayOfWeekFrom = 1; // Monday
-$iDefaultStartTimestamp = mktime(0, 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom);
+$iDefaultStartTimestamp = mktime(12 - get_option('gmt_offset'), 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom);
 $strDefaultStartDate = date( 'j.n.Y', $iDefaultStartTimestamp );
-$iDefaultEndTimestamp = mktime(0, 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom + 7) - 1;
+$aDefaultStartDate = array(
+  "timestamp" => $iDefaultStartTimestamp,
+  "day" => date( 'j', $iDefaultStartTimestamp ),
+  "month" => intval(date( 'n', $iDefaultStartTimestamp )) - 1,
+  "year" => date( 'Y', $iDefaultStartTimestamp ),
+);
+$iDefaultEndTimestamp = mktime(12 - get_option('gmt_offset'), 0, 0, date("n"), date("j") - date("N") + $iDayOfWeekFrom + 6);
 $strDefaultEndDate = date( 'j.n.Y', $iDefaultEndTimestamp );
+$aDefaultEndDate = array(
+  "timestamp" => $iDefaultEndTimestamp,
+  "day" => date( 'j', $iDefaultEndTimestamp ),
+  "month" => intval(date( 'n', $iDefaultEndTimestamp )) - 1,
+  "year" => date( 'Y', $iDefaultEndTimestamp ),
+);
 
 $iLatestEventsAddedDayOfWeekFrom = 1; // Monday
+$iLatestEventsDefaultAddedStartTimestampGMT = mktime(12 - get_option('gmt_offset'), 0, 0, date("n"), date("j") - date("N") - 7 + $iLatestEventsAddedDayOfWeekFrom);
 $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j") - date("N") - 7 + $iLatestEventsAddedDayOfWeekFrom);
 $strLatestEventsDefaultAddedStartDate = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
+$aLatestEventsDefaultAddedStartDate = array(
+  "day" => date( 'j', $iLatestEventsDefaultAddedStartTimestamp ),
+  "month" => date( 'n', $iLatestEventsDefaultAddedStartTimestamp ),
+  "year" => date( 'Y', $iLatestEventsDefaultAddedStartTimestamp ),
+  "hour" => date( 'G', $iLatestEventsDefaultAddedStartTimestamp ),
+);
 
 $theme_defaults = array(
   'theme_sender_name'                 => get_bloginfo( 'name' ),
   'theme_title_by_dates'              => 'Udalosti na tento týždeň',
   'theme_title_latest'                => 'Nové udalosti',
   'theme_max_events_by_dates'         => 5,
-  'theme_start_date'                  => '',
-  'theme_end_date'                    => '',
+  'theme_start_date'                  => $iDefaultStartTimestamp,
+  'theme_end_date'                    => $iDefaultEndTimestamp,
+  'theme_start_date_added_latest'     => $iLatestEventsDefaultAddedStartTimestampGMT,
   'theme_max_events_latest'           => 5,
   'theme_orderby'                     => 'category',
   'theme_categories'                  => array(),
@@ -91,6 +111,8 @@ if ($bTermsSet) {
   }
 }
 
+// var_dump($controls->get_value("theme_start_date"));
+
 // Mandatory!
 $controls->merge_defaults($theme_defaults);
 
@@ -101,19 +123,35 @@ foreach ($aCategorySlugsOrder as $slug) {
   $aOrderedCategories[$slug] = $aCategoryNamesBySlugs[$slug];
 }
 $aOrderedCategories += $aCategoryNamesBySlugs;
+
+function fnSrdButtonDateReset( $strName, $aDateParts, $bUseName = false ) {
+  $strButtonTemplate = '<button class="button-primary" onclick="%onclick%" style="background-color: lightgrey; color: #444;">Reset</button>';
+  $strOnclick = '';
+  foreach ($aDateParts as $sKey => $sVal) {
+    if ($sKey == "timestamp") { continue; }
+    $strSelector = $bUseName ? "[name=\'{$strName}_{$sKey}\']" : '#'.$strName.'_'.$sKey;
+    $strOnclick .= "jQuery('{$strSelector}').val({$sVal}); ";
+  }
+  if (isset($aDateParts["timestamp"])) {
+    $strOnclick .= "jQuery('input[name=\"options[{$strName}]\"]').val({$aDateParts['timestamp']}); ";
+  }
+  $strOnclick .= "return false;";
+  $strButtonHtml = str_replace(array('%onclick%'), array(esc_attr($strOnclick)), $strButtonTemplate);
+  echo $strButtonHtml;
+}
 ?>
 
 <table class="form-table">
     <tr valign="top">
         <th>Odosielateľ</th>
         <td>
-            <?php $controls->text('theme_sender_name', 20); ?>
+            <?php $controls->text('theme_sender_name', 30); ?>
         </td>
     </tr>
     <tr valign="top">
         <th>Nadpis časti generovanej na základe rozpätia dátumov</th>
         <td>
-            <?php $controls->text('theme_title_by_dates', 20); ?>
+            <?php $controls->text('theme_title_by_dates', 30); ?>
         </td>
     </tr>
     <tr valign="top">
@@ -125,25 +163,31 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
     <tr valign="top">
         <th>Začiatočný dátum časti generovanej na základe rozpätia dátumov</th>
         <td>
-            <?php $controls->text('theme_start_date', 10); ?> (v tvare d.m.rrrr; ak sa nevyplní, použije sa pondelok v aktuálnom týždni: <?php echo $strDefaultStartDate; ?>)
+<!--             <?php // $controls->text('theme_start_date_text', 10); ?> (v tvare d.m.rrrr; ak sa nevyplní, použije sa pondelok v aktuálnom týždni: <?php echo $strDefaultStartDate; ?>) -->
+            <?php $controls->date('theme_start_date'); ?><br>
+            Nastav na default, tj. pondelok v aktuálnom týždni (<?php echo $strDefaultStartDate; ?>): <?php fnSrdButtonDateReset( 'theme_start_date', $aDefaultStartDate ); ?>
         </td>
     </tr>
     <tr valign="top">
         <th>Koncový dátum časti generovanej na základe rozpätia dátumov</th>
         <td>
-            <?php $controls->text('theme_end_date', 10); ?> (v tvare d.m.rrrr; ak sa nevyplní, použije sa nedeľa v aktuálnom týždni: <?php echo $strDefaultEndDate; ?>)
+<!--             <?php // $controls->text('theme_end_date', 10); ?> (v tvare d.m.rrrr; ak sa nevyplní, použije sa nedeľa v aktuálnom týždni: <?php echo $strDefaultEndDate; ?>) -->
+          <?php $controls->date('theme_end_date'); ?><br>
+          Nastav na default, tj. nedeľu v aktuálnom týždni (<?php echo $strDefaultEndDate; ?>): <?php fnSrdButtonDateReset( 'theme_end_date', $aDefaultEndDate ); ?>
         </td>
     </tr>
     <tr valign="top">
         <th>Nadpis časti s najnovšími udalosťami</th>
         <td>
-            <?php $controls->text('theme_title_latest', 20); ?>
+            <?php $controls->text('theme_title_latest', 30); ?>
         </td>
     </tr>
     <tr valign="top">
         <th>Minimálny (najskorší) dátum a čas pridania najnovších udalostí</th>
         <td>
-            <?php $controls->text('theme_start_date_added_latest', 10); ?> (v tvare d.m.rrrr h:mm; ak sa nevyplní, použije sa pondelok 12:00 predošlého týždňa: <?php echo $strLatestEventsDefaultAddedStartDate; ?>)
+<!--             <?php // $controls->text('theme_start_date_added_latest', 10); ?> (v tvare d.m.rrrr h:mm; ak sa nevyplní, použije sa pondelok 12:00 predošlého týždňa: <?php echo $strLatestEventsDefaultAddedStartDate; ?>) -->
+          <?php $controls->datetime('theme_start_date_added_latest'); ?><br>
+          Nastav na default, tj. pondelok 12:00 predošlého týždňa (<?php echo $strLatestEventsDefaultAddedStartDate; ?>): <?php fnSrdButtonDateReset( 'theme_start_date_added_latest', $aLatestEventsDefaultAddedStartDate, true ); ?>
         </td>
     </tr>
     <tr valign="top">
@@ -215,6 +259,13 @@ $aOrderedCategories += $aCategoryNamesBySlugs;
       $this = jQuery(this)
       $this.attr("title", $this.text())
     })
-    jQuery(".theme_category_order-li").css("cursor", "pointer")
+    jQuery(".theme_category_order-li").css("cursor", "pointer").css("width", "100%")
+    
+//     jQuery("button.button-primary").each(function () {
+//       var $button = jQuery(this)
+//       if ($button.html() == "Reset" && !$button.hasClass("srd-buton-grey")) {
+//         $button.addClass("srd-buton-grey").css("background-color", "lightgrey").css("color", "#444")
+//       }
+//     })
   })
 </script>
