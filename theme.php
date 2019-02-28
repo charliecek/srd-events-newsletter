@@ -151,7 +151,7 @@ if ($theme_options['theme_orderby'] === 'category') {
     }
     $iCnt++;
   }
-  
+
   $aEventsUpcomingWeek = array();
   foreach ($aEventsUpcomingByCats as $aEventsIncat) {
     $aEventsUpcomingWeek = array_merge( $aEventsUpcomingWeek, $aEventsIncat);
@@ -193,7 +193,7 @@ if ($theme_options['theme_orderby'] === 'category') {
 
 function ai1ecfRemoveEmoji($text) {
     // For more: https://unicode.org/Public/emoji/11.0/emoji-data.txt //
-    
+
     $clean_text = "";
 
     // Match Miscellaneous Symbols and Pictographs
@@ -413,7 +413,7 @@ if (false === ob_get_contents()) {
                           <td align="right" id="td_8cbd_2" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;border-collapse: collapse;font-size: 14px;color: #888888;font-weight: 300;text-align: right;word-break: break-word;line-height: 22px;">
                             <div id="div_8cbd_0" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;text-align: right;font-size: 14px;">
                                 <span id="span_8cbd_0" style="line-height: 20px;font-size: 12px;">
-                                    Ak sa vám Newsleter nezobrazuje správne, 
+                                    Ak sa vám Newsleter nezobrazuje správne,
                                     <a href="{email_url}" id="a_8cbd_0" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;color: #6689ac;border-style: none;text-decoration: none !important;">
                                       kliknite sem.
                                     </a>
@@ -1111,7 +1111,7 @@ if (count($aEventsLatest) > 0) :
       $image = $aImage[0];
     }
     $strVenue = ai1ecf_fix_location($oEvent->get( 'venue' ), $post->ID, $oEvent->get("address"), $oEvent->get("contact_name"), true);
-    
+
     $strExcerpt = get_the_excerpt();
     $dom = new DOMDocument();
     $dom->loadHTML(mb_convert_encoding($strExcerpt, 'HTML-ENTITIES', 'UTF-8'));
@@ -1442,7 +1442,7 @@ endif;
                                 </tr>
                               </tbody>
                             </table>
-                          
+
                           <!--[if (gte mso 9)|(IE)]>
                           </td>
                           <td valign="top" >
@@ -1477,6 +1477,7 @@ endif;
                             <div id="div_8cbd_3" style="-webkit-text-size-adjust: none;-ms-text-size-adjust: none;text-align: left;font-size: 13px;font-weight: 400;text-decoration: none;line-height: 21px;color: #ffffff;">
                               Chcete pridať udalosť? Pošlite nám link Facebook udalosti na náš Facebook profil. Ďakujeme.
                             </div>
+                            <!--NLSUBSCRIBE-->
                           </td>
                         </tr>
                         <tr>
@@ -1568,18 +1569,119 @@ endif;
 </html>
 
 <?php
+// Get newsletter contents and save them //
 if (false !== ob_get_contents()) {
+  // $strSubscriptionFormHtml = do_shortcode('[newsletter_form]');
+  $strSubscriptionFormHtml = ""; // TODO when styling is done //
+  /*
+  $strSubscriptionFormHtml = '<div class="tnp tnp-widget-minimal tnp-widget tnp-widget-minimal-gdpr">
+    <script type="text/javascript">
+      var newsletter = {
+        "messages":{
+          "email_error":"Emailová adresa, ktorú ste zadali nie je validná!",
+          "name_error":"Nesprávne meno",
+          "surname_error":"Nesprávne priezvisko",
+          "profile_error":"",
+          "privacy_error":"Bez súhlasu so spracovaním údajov Vám nemôžeme zasielať newsletter, a teda nemá zmysel, aby ste sa prihlasovali."
+        },
+        "profile_max":"20"
+      };
+      function newsletter_check_field(field, message) {
+        if (!field) return true;
+        if (field.type == "checkbox" && !field.checked) {
+            alert(message);
+            return false;
+        }
+
+        if (field.required !== undefined && field.required !== false && field.value == "") {
+            alert(message);
+            return false;
+        }
+        return true;
+      }
+
+      function newsletter_check(f) {
+        var ne = f.querySelectorAll("[name=ne]")
+        var re = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-]{1,})+\.)+([a-zA-Z0-9]{2,})+$/;
+        for (var i = 0; i < ne.length; i++) {
+          if (!re.test(ne[i].value)) {
+              alert(newsletter.messages.email_error);
+              return false;
+          }
+        }
+
+        var nn = f.querySelectorAll("[name=nn]")
+        for (var i = 0; i < nn.length; i++) {
+          if (!newsletter_check_field(nn[i], newsletter.messages.name_error)) return false;
+        }
+        var ns = f.querySelectorAll("[name=ns]")
+        for (var i = 0; i < ns.length; i++) {
+          if (!newsletter_check_field(ns[i], newsletter.messages.surname_error)) return false;
+        }
+
+        for (var i=1; i<newsletter.profile_max; i++) {
+          var npi = f.querySelectorAll("[name=np"+i+"]")
+          for (var j = 0; j < npi.length; j++) {
+            if (!newsletter_check_field(npi[j], newsletter.messages.profile_error)) return false;
+          }
+        }
+
+        var ny = f.querySelectorAll("[name=ny]")
+        for (var i = 0; i < ny.length; i++) {
+          if (!newsletter_check_field(ny[i], newsletter.messages.privacy_error)) return false;
+        }
+
+        f.submit();
+        return true;
+      }
+    </script>
+    <p>Chcete odoberat newsletter?</p>
+    <form action="http://festivaly.salsarueda.dance/?na=s" method="post" novalidate="" onsubmit="event.preventDefault(); return newsletter_check(this)">
+      <input type="hidden" name="nl[]" value="1">
+      <input type="hidden" name="nr" value="widget-minimal-gdpr">
+      <div class="tnp-field tnp-field-email">
+        <input class="tnp-email" type="email" required="" name="ne" value="" placeholder="Email">
+      </div>
+      <div class="tnp-field tnp-field-privacy">
+        <label>
+          <input type="checkbox" name="ny" required="" class="tnp-privacy">
+          <span class="tnp-label-privacy tnp-label-text-nolink pum-trigger" style="cursor: pointer;" onmouseover="document.getElementById(\'gdpr-txt\').style.display=\'block\'" onmouseout="document.getElementById(\'gdpr-txt\').style.display=\'none\'">Súhlasím so spracovaním údajov</span>
+        </label>
+      </div>
+      <input class="tnp-submit" type="submit" value="Odoberať newsletter">
+    </form>
+  </div>
+
+  <div id="gdpr-txt" style="display: none; position: fixed; bottom: 20%; width: 24%; background-color: grey; right: 15%; padding: 20px;">
+    <h3>Ochrana osobných údajov</h3>
+    <p>Kedykoľvek budete chcieť newsletter zrušiť, môžete tak spraviť kliknutím na odkaz v pätičke ľubovoľného emailu alebo nás kontaktujte na info@salsarueda.dance.</p>
+    <p>Vaše informácie budeme rešpektovať a používať výlučne ku kontaktovaniu a zasielaniu noviniek tohoto webu. K vaším údajom bude mať prístup iba majiteľ tohoto webu a nebude ich poskytovať iným osobám.</p>
+    <p>Spracovanie týchto údajov nám povoľuje zákon GDPR a tieto údaje budeme uchovávať po dobu existencie tohoto webu alebo kým si Vy nevyžiadate zmazanie z databázy.</p>
+    <p>Máte právo byť jednoducho vymazaný z databázy, právo na presun údajov a právo na prístup k informáciám ktoré o vás tento web zhromaždil.</p>
+  </div>';
+      // maybe get GDPR text this way:
+      $my_postid = 3683; // PUM popup ID
+      $content_post = get_post($my_postid);
+      $content = $content_post->post_content;
+      $content = apply_filters('the_content', $content);
+      $content = str_replace(']]>', ']]&gt;', $content);
+      // echo $content;
+  //*/
   $strContents = str_replace(
-    array( "{profile_url}", "{blog_url}", "{email_url}" ),
-    array( "", get_home_url(), "" ),
+    array( "{profile_url}", "{blog_url}", "{email_url}", "<!--NLSUBSCRIBE-->" ),
+    array( "", get_home_url(), "", $strSubscriptionFormHtml ),
     ob_get_contents()
   );
   // var_dump($theme_options['theme_replace_latest']);
   $bReplaceLatest = (isset($theme_options['theme_replace_latest']) && $theme_options['theme_replace_latest']);
   unset($theme_options['theme_replace_latest']);
-  $strThemeOptionsHash = md5(serialize($theme_options));
-  $strDirPath = get_home_path() . 'newsletters';
-  
+  $aThemeOptionsForHash = array_filter($theme_options, function($k) {
+      return substr( $k, 0, 6 ) === "theme_";
+  }, ARRAY_FILTER_USE_KEY);
+  $strThemeOptionsHash = md5(serialize($aThemeOptionsForHash));
+  $strDirName = 'newsletters';
+  $strDirPath = get_home_path() . $strDirName;
+
   // Remove subdirectory if wp is installed in one //
   $home    = set_url_scheme( WP_HOME, 'http' );
   $siteurl = set_url_scheme( WP_SITEURL, 'http' );
@@ -1587,21 +1689,21 @@ if (false !== ob_get_contents()) {
     $wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
     $strDirPath = str_replace( $wp_path_rel_to_home, '', $strDirPath );
   }
-  
+
   // Create directory if missing //
   if (!file_exists($strDirPath)) {
     mkdir($strDirPath);
   }
-  
+
   // Save the theme for the current options //
   $strFilePath = $strDirPath.'/nl-'.$strThemeOptionsHash.'.html';
   file_put_contents($strFilePath, $strContents);
-  
+
   // Save the theme to latest, if needed //
   if ($bReplaceLatest) {
     $strFilePath = $strDirPath.'/nl-latest.html';
     file_put_contents($strFilePath, $strContents);
-    
+
 //     echo "Saved";
     $aThemeOptions = get_option('newsletter_emails_theme_srd', false);
     if (false !== $aThemeOptions && isset($aThemeOptions['theme_replace_latest'])) {
@@ -1609,7 +1711,7 @@ if (false !== ob_get_contents()) {
 //       echo " and removed option";
       unset($aThemeOptions['theme_replace_latest']);
       update_option('newsletter_emails_theme_srd', $aThemeOptions);
-      
+
       $aThemeOptionsAll = get_option('newsletter_emails', false);
       if (false !== $aThemeOptionsAll && isset($aThemeOptionsAll['theme']) && $aThemeOptionsAll['theme'] == "srd") {
 //         echo "<!-- \n"; var_dump($aThemeOptionsAll); echo "\n -->";
@@ -1619,5 +1721,133 @@ if (false !== ob_get_contents()) {
       }
     }
   }
+
+  // Get all saved NLs //
+  $aFilesUnsorted = scandir($strDirPath);
+
+  // Sort by datetime //
+  $files = array();
+  foreach ($aFilesUnsorted as $file) {
+    if ($file !== 'nl-latest.html' && preg_match('~.*\.html$~', $file)) {
+      $files[$file] = filemtime($strDirPath . '/' . $file);
+    }
+  }
+  asort($files);
+
+  $aFiles = array_keys($files);
+
+  // Get info //
+  $aNLFiles = array();
+  foreach ($aFiles as $sFileName) {
+    $sHash = str_replace(array('nl-', '.html'), '', $sFileName);
+    $iModTime = filemtime($strDirPath . '/' . $sFileName);
+    $sModTime = date( "l, Y-m-d H:i:s", $iModTime );
+    $aNLFiles[$sHash] = array(
+      'title'         => "Newsletter saved on {$sModTime}",
+      "ts:$iModTime"  => array(
+        "contents"      => file_get_contents($strDirPath . "/" . "sFileName"),
+      ),
+    );
+  }
+
+  // Read from DB (merge with file listing) and save current NL's info to DB //
+  $strOptionKey = "srd-events-newsletter";
+  $aNLs = array_merge($aNLFiles, get_option( $strOptionKey, array() ));
+  $iTimestamp = time();
+  $oUser = wp_get_current_user();
+  $aNLs[$strThemeOptionsHash] = array_merge(
+    (is_array($aNLs[$strThemeOptionsHash]) && !empty($aNLs[$strThemeOptionsHash])) ? $aNLs[$strThemeOptionsHash] : array(),
+    array(
+      'title'         => $theme_subject,
+      'theme_options' => $aThemeOptionsForHash,
+      "ts:$iTimestamp" => array(
+        'datetime'      => date( "l, Y-m-d H:i:s", $iTimestamp + (get_option('gmt_offset') * 3600) ),
+        'user_id'       => $oUser->ID,
+        'user'          => "{$oUser->firstname} {$oUser->lastname} ({$oUser->user_login} / {$oUser->user_email})",
+        'contents'      => ob_get_contents(),
+        'counts'        => array(
+          'latest'    => count($aEventsLatest),
+          'upcoming' => count($aEventsUpcomingWeek),
+        )
+      )
+    )
+  );
+  update_option( $strOptionKey, $aNLs );
+
+  // Save a readable html summary //
+  $strSummaryFilePath = $strDirPath.'/nls.htm';
+  $strSummaryContents = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" style="width: 100%;">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no">
+    <title>Newsletter INFO</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700,300&amp;subset=latin,cyrillic,greek" rel="stylesheet" type="text/css">
+    <!--[if gte mso 15]>
+      <style type="text/css">
+        a{text-decoration: none !important;}
+        body { font-size: 0; line-height: 0; }
+        tr { font-size:1px; mso-line-height-alt:0; mso-margin-top-alt:1px; }
+        table { font-size:1px; line-height:0; mso-margin-top-alt:1px; }
+        body,table,td,span,a,font{font-family: Arial, Helvetica, sans-serif !important;}
+        a img{ border: 0 !important;}
+      </style>
+    <![endif]-->
+    <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  </head>
+  <body>
+    <table style="width: 100%;">';
+  $strTdProps = ' colspan="2" style="border-top: 1px solid black;"';
+  $strThProps = ' style="border-top: 1px solid black;"';
+  foreach ($aNLs as $sHash => $aNL) {
+    $strSummaryContents .= "\n<tr><th colspan='3' style='border-top: 2px solid black;'><a href='/{$strDirName}/nl-{$sHash}.html' target='_blank'>{$aNL['title']}</a></th></tr>";
+    foreach ($aNL as $key => $val) {
+      if (in_array($key, array("title", "theme_options"))) { continue; }
+      if (count($val) < 2) {
+        continue;
+      } else {
+        $iRowSpan = 5;
+      }
+      $strSummaryContents .= "\n<tr><th{$strThProps} rowspan='{$iRowSpan}'>({$key})</th>";
+      if ($iRowSpan)
+      $i = 0;
+      foreach ($val as $name => $value) {
+        if ($i === 0) {
+          $sTrStart = "\n";
+          $sTrEnd = "";
+          $sProps = ' style="border-top: 1px solid black;"';
+        } else {
+          $sTrStart = "\n<tr>";
+          $sTrEnd = "</tr>";
+          $sProps = "";
+        }
+        switch ($name) {
+          case 'contents':
+            // nothing //
+            break;
+          case 'counts':
+            $strSummaryContents .= "{$sTrStart}<th{$sProps}>{$name} - latest</th><td{$sProps}>{$value['latest']}</td>$sTrEnd";
+            $strSummaryContents .= "{$sTrStart}<th{$sProps}>{$name} - upcoming</th><td{$sProps}>{$value['upcoming']}</td>$sTrEnd";
+            break;
+          default:
+            $strSummaryContents .= "{$sTrStart}<th{$sProps}>{$name}</th><td{$sProps}>{$value}</td>$sTrEnd";
+            break;
+        }
+        $i++;
+      }
+    }
+    if (isset($aNL['theme_options'])) {
+      $strSummaryContents .= "\n<tr><th{$strThProps}>theme_options</th><td{$strTdProps}><pre>" . var_export($aNL['theme_options'], true) . "</pre></td></tr>";
+    }
+  }
+  $strSummaryContents .= "\n</table>";
+  // $aNLs[$strThemeOptionsHash]["ts:$iTimestamp"]["contents"] = "TRIMMED";
+  // $strSummaryContents .= "\n<pre>" . var_export($aNLs, true) . "</pre>";
+  $strSummaryContents .= '
+  <body>
+</html>';
+  file_put_contents($strSummaryFilePath, $strSummaryContents);
 }
 ?>
