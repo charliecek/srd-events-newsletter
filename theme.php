@@ -231,14 +231,24 @@ if (isset($theme_options['theme_start_date_added_latest']) && !empty($theme_opti
 //   $dtAddedFromDate = date_create_from_format( 'j.n.Y G:i', $theme_options['theme_start_date_added_latest'] );
 //   $iLatestEventsDefaultAddedStartTimestamp = date_timestamp_get($dtAddedFromDate);
   $iLatestEventsDefaultAddedStartTimestamp = $theme_options['theme_start_date_added_latest'] + $iGmtOffsetSec;
+  $iLatestEventsDefaultAddedStartTimestampFilter = $theme_options['theme_start_date_added_latest'] - 3600 * 24;
 } else {
   $iLatestEventsDefaultAddedStartTimestamp = mktime(12, 0, 0, date("n"), date("j") - date("N") - 7 + $iLatestEventsAddedDayOfWeekFrom);
+$iLatestEventsDefaultAddedStartTimestampFilter = $iLatestEventsDefaultAddedStartTimestamp - 3600 * 24;
 }
 // $theme_options['theme_start_date_added_latest'] = date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp );
 // echo date( 'j.n.Y G:i', $iLatestEventsDefaultAddedStartTimestamp ) . "<br>";
 $iMaxEventsLatest = (trim($theme_options['theme_max_events_latest']) === '') ? 10 : (int) $theme_options['theme_max_events_latest'];
 
-$filtersLatest['posts_per_page'] = $iMaxEventsLatest * 3;
+$filtersLatest['posts_per_page'] = -1;
+$filtersLatest['date_query'] = array(
+  'after' => array(
+    'year' => intval(date("Y", $iLatestEventsDefaultAddedStartTimestampFilter)),
+    'month' => intval(date("m", $iLatestEventsDefaultAddedStartTimestampFilter)),
+    'day' => intval(date("d", $iLatestEventsDefaultAddedStartTimestampFilter))
+  ),
+  'inclusive' => true
+);
 $filtersLatest['post_type'] = array('ai1ec_event');
 if (!empty($aUpcomingWeekPostIDs)) {
   $filtersLatest['exclude'] = $aUpcomingWeekPostIDs;
