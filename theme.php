@@ -1755,7 +1755,7 @@ if (false !== ob_get_contents()) {
     $aNLFiles[$sHash] = array(
       'title'         => "Newsletter saved on {$sModTime}",
       "ts:$iModTime"  => array(
-        "contents"      => file_get_contents($strDirPath . "/" . "sFileName"),
+//         "contents"      => file_get_contents($strDirPath . "/" . "$sFileName"),
       ),
     );
   }
@@ -1774,7 +1774,7 @@ if (false !== ob_get_contents()) {
         'datetime'      => date( "l, Y-m-d H:i:s", $iTimestamp + (get_option('gmt_offset') * 3600) ),
         'user_id'       => $oUser->ID,
         'user'          => "{$oUser->firstname} {$oUser->lastname} ({$oUser->user_login} / {$oUser->user_email})",
-        'contents'      => ob_get_contents(),
+//         'contents'      => ob_get_contents(),
         'counts'        => array(
           'latest'    => count($aEventsLatest),
           'upcoming' => count($aEventsUpcomingWeek),
